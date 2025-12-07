@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>  تسوق🛒  </title>
+    <style>
+        /* ====== Base & Reset ====== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "Tajawal", sans-serif; background: #f7f7f7; color: #333; }
+
+        a { text-decoration: none; color: inherit; }
+
+        /* ====== Header ====== */
+        header { background: #6a11cb; background: linear-gradient(90deg,#6a11cb 0%,#2575fc 100%); color: white; padding: 15px 20px; }
+        .top-nav { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .logo { font-size: 24px; font-weight: bold; }
+        .nav-links a { margin-left: 20px; font-weight: bold; transition: 0.3s; }
+        .nav-links a:hover { opacity: 0.8; }
+
+        /* ====== Banner ====== */
+        .banner {
+            background: url('https://via.placeholder.com/1200x300?text=Banner') no-repeat center center/cover;
+            padding: 60px 20px;
+            text-align: center;
+            color: #000000;
+        }
+        .banner h1 { font-size: 36px; margin-bottom: 20px; text-shadow: 1px 1px 5px rgba(0,0,0,0.5); }
+        .banner p { font-size: 18px; margin-bottom: 20px; text-shadow: 1px 1px 5px rgba(0,0,0,0.5); }
+
+        /* ====== Container ====== */
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+        .section-title { font-size: 28px; margin-bottom: 20px; text-align: center; }
+
+        /* ====== Templates Grid ====== */
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px,1fr));
+            gap: 20px;
+        }
+        .template-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        .template-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
+
+        .template-img { width: 100%; height: 150px; object-fit: cover; }
+
+        .template-body { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+        .template-body h3 { font-size: 18px; margin-bottom: 5px; }
+        .template-body p { font-size: 14px; color: #555; flex-grow: 1; }
+        .price { font-weight: bold; margin: 10px 0; color: #27ae60; }
+        .btn-buy {
+            padding: 12px;
+            background: #e67e22;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+        .btn-buy:hover { background: #cf711f; }
+
+        /* ====== Footer ====== */
+        footer {
+            background: #222; color: #fff; padding: 30px 20px; text-align: center; margin-top: 50px;
+        }
+        footer a { color: #fff; margin: 0 10px; font-weight: bold; }
+
+        /* ====== Responsive ====== */
+        @media(max-width: 768px) { .top-nav { flex-direction: column; align-items: flex-start; } }
+        @media(max-width: 480px) { .banner h1 { font-size: 28px; } .banner p { font-size: 16px; } }
+    </style>
+</head>
+<body>
+
+    <!-- ====== Header ====== -->
+    <header>
+        <div class="top-nav">
+            <div class="logo"> تسوق🛒</div>
+            <div class="nav-links">
+                <a href="test.html">الرئيسية</a>
+                <a href="test04.html">القوالب</a>
+                <a href="test08.html">حولنا</a>
+                <a href="#">اتصل بنا</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====== Banner ====== -->
+    <div class="banner">
+        <h1>اكتشف قوالب التصميم المخصصة</h1>
+        <p>قوالب احترافية جاهزة للتعديل تناسب علامتك التجارية.</p>
+    </div>
+
+    <!-- ====== Templates Section ====== -->
+    <main class="container">
+        <h2 class="section-title">قوالبنا</h2>
+        <div class="templates-grid">
+
+            <!-- T !-->
+            <div class="template-card">
+                <img src="photo/2012.jpg" class="template-img" alt="">
+                <div class="template-body">
+                    <h3>قالب منشور إنستجرام عصري</h3>
+                    <p>تصميم شبابي قابل للتعديل لوسائل التواصل الاجتماعي.</p>
+                    <div class="price">$15</div>
+                   <button class="btn-buy" onclick="window.location.href='test09.html'">شراء الآن</button>
+                </div>
+            </div>
+
+            <!-- Template 2 -->
+            <div class="template-card">
+                <img src="photo/2005.jpg" class="template-img" alt="">
+                <div class="template-body">
+                    <h3>قالب نشرة شركة</h3>
+                    <p>نشرة أنيقة للشركات والعلامات التجارية.</p>
+                    <div class="price">$20</div>
+                    <button class="btn-buy" onclick="window.location.href='test09.html'">شراء الآن</button>
+                </div>
+            </div>
+
+            <!-- Template 3 -->
+            <div class="template-card">
+                <img src="photo/كرط عمللللل.jpg" class="template-img" alt="">
+                <div class="template-body">
+                    <h3>قالب بطاقة عمل حديثة</h3>
+                    <p>كرت شخصي بتصميم بسيط واحترافي.</p>
+                    <div class="price">$10</div>
+                   <button class="btn-buy" onclick="window.location.href='test09.html'">شراء الآن</button>
+                </div>
+            </div>
+
+
+
+
+
+            <!-- Template 4 -->
+            <div class="template-card">
+                <img src="photo/555.jpg" class="template-img" alt="">
+                <div class="template-body">
+                    <h3>قالب عرض تقديمي احترافي</h3>
+                    <p>شرائح أنيقة لعروض الأعمال والاجتماعات.</p>
+                    <div class="price">$25</div>
+                  <button class="btn-buy" onclick="window.location.href='test09.html'">شراء الآن</button>
+                </div>
+            </div>
+
+            <!-- Template 5 -->
+            <div class="template-card">
+                <img src="photo/inst.jpg" class="template-img" alt="">
+                <div class="template-body">
+                    <h3>قالب قصة إنستجرام</h3>
+                    <p>قصة مميزة لتسويق منتجاتك أو خدماتك.</p>
+                    <div class="price">$12</div>
+                    <button class="btn-buy" onclick="window.location.href='test09.html'">شراء الآن</button>
+                </div>
+            </div>
+
+            <!-- Template 6 -->
+            <div class="template-card">
+                <img src="photo/2121.jpg" class="template-img" alt="">
+                <div class="template-body">
+                    <h3>قالب إعلان رقمي</h3>
+                    <p>تصميم احترافي للإعلانات الرقمية والترويج.</p>
+                    <div class="price">$18</div>
+                   <button class="btn-buy" onclick="window.location.href='test09.html'">شراء الآن</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ====== Footer ====== -->
+    <footer>
+        <p>جميع الحقوق محفوظة &copy; 2025 | <a href="#">علامتك التجارية</a></p>
+        <div>
+            <a href="teste.html">الرئيسية</a> |
+            <a href="test04.html">القوالب</a> |
+            <a href="test08.html">حولنا</a> |
+            <a href="#">اتصل بنا0697228118-0563418254</a>
+        </div>
+    </footer>
+
+</body>
+</html>

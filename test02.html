@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تسجيل الدخول</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #1e1e1e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .box {
+            background: #2b2b2b;
+            padding: 30px;
+            width: 350px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.4);
+            color: white;
+        }
+        h2 {
+            color: #ffcc00;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: none;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #ffdd33;
+            border: none;
+            color: black;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background: #ffcc00;
+        }
+        .small-text {
+            text-align: center;
+            margin-top: 10px;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>تسجيل الدخول</h2>
+    <p>سجل دخولك لمتابعة تصميماتك بسهولة</p>
+
+    <label>البريد الإلكتروني</label>
+    <input type="email" id="email" placeholder="example@gmail.com">
+
+    <label>كلمة المرور</label>
+    <input type="password" id="pass" placeholder="********">
+
+    <button class="btn" onclick="goNext()">تسجيل الدخول</button>
+
+    <p class="small-text">ليس لديك حساب؟ أنشئ حسابًا</p>
+</div>
+
+<script>
+    function goNext() {
+        window.location.href = "test04.html "; 
+    }
+</script>
+
+</body>
+</html>

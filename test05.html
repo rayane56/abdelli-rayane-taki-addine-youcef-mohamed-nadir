@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>محرر صفحة - سحب، تعديل، تغيير الحجم</title>
+<style>
+  :root{
+    --toolbar-h:60px;
+    --accent:#1e88e5;
+    --bg:#41403dff;
+  }
+  html,body{height:100%;margin:0;font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;direction:rtl}
+  body{background:var(--bg);display:flex;flex-direction:column}
+  .toolbar{
+    height:var(--toolbar-h);
+    background:#41403dff;
+    border-bottom:1px solid #e6e6c8ff;
+    display:flex;align-items:center;gap:8px;padding:8px 12px;
+    box-shadow:0 1px 4px rgba(248, 248, 235, 0.03);
+  }
+  .toolbar button, .toolbar select, .toolbar input[type=color], .toolbar input[type=file]{
+    height:36px;border:1px solid #e2df21ff;background:white;padding:0 10px;border-radius:8px;
+    cursor:pointer;
+  }
+  .toolbar .group{display:flex;align-items:center;gap:8px;margin-inline-start:8px}
+  .workspace-wrap{display:flex;flex:1;gap:12px;padding:12px}
+  .sidebar{width:260px;background:white;border-radius:8px;padding:12px;border:1px solid #e2df0fff;box-shadow:0 2px 6px rgba(0,0,0,.03)}
+  .canvas{
+    flex:1;display:flex;justify-content:center;align-items:flex-start;padding:18px;overflow:auto;
+  }
+  /* تصميم الباطن - مساحة العمل (مثل ورقة) */
+  .paper{
+    width:1024px;height:576px;background:white;border:1px solid #373807ff;position:relative;
+    box-shadow:0 10px 30px rgba(0,0,0,.05);overflow:hidden;
+  }
+
+  /* العناصر القابلة للتحرير */
+  .node{
+    position:absolute;min-width:40px;min-height:30px;box-sizing:border-box;
+    border:1px dashed transparent;cursor:grab;
+    display:flex;align-items:center;justify-content:center;padding:6px;
+    user-select:none;
+  }
+  .node.selected{border-color:var(--accent);box-shadow:0 6px 20px rgba(235, 239, 243, 0.12)}
+  .node .content{outline:none;min-width:20px;min-height:20px}
+  .node img{max-width:100%;max-height:100%;display:block;pointer-events:none}
+
+  /* مقابض تغيير الحجم */
+  .resizer{
+    width:10px;height:10px;position:absolute;background:white;border:2px solid var(--accent);border-radius:2px;box-sizing:border-box;
+    cursor:se-resize;
+  }
+  .resizer.br{right:-7px;bottom:-7px}
+
+  /* أزرار تحكم عنصر */
+  .controls{
+    margin-top:8px;display:flex;flex-direction:column;gap:8px;font-size:14px;
+  }
+  label{font-size:14px;color:#333}
+  .small{font-size:13px;color:white}
+  .btn{display:inline-block;padding:8px 10px;border-radius:8px;border:1px solid #d1c51dff;background:white;cursor:pointer}
+  .btn.danger{border-color:#ed6c63;color:#b00000}
+</style>
+</head>
+<body>
+
+<div class="toolbar" role="toolbar" aria-label="شريط الأدوات">
+  <div class="group">
+    <button id="addTextBtn">إضافة نص</button>
+    <label class="btn">
+      إضافة صورة
+      <input id="imgInput" type="file" accept="image/*" style="display:none">
+    </label>
+    <button id="deleteBtn" class="btn danger">حذف العنصر</button>
+  </div>
+
+  <div class="group" style="margin-inline-start:auto">
+    <label class="small">حجم الخط</label>
+    <select id="fontSize">
+      <option value="14px">14</option>
+      <option value="18px" selected>18</option>
+      <option value="24px">24</option>
+      <option value="32px">32</option>
+      <option value="40px">40</option>
+    </select>
+
+    <label class="small">لون النص</label>
+    <input id="fontColor" type="color" value="#131212ff">
+
+    <label class="small">خلفية</label>
+    <input id="bgColor" type="color" value="#f8ebebff">
+  </div>
+</div>
+
+<div class="workspace-wrap">
+  <div class="canvas" id="canvasWrap">
+    <div class="paper" id="paper" aria-label="منطقة التصميم">
+      <!-- العناصر تُضاف هنا ديناميكياً -->
+    </div>
+  </div>
+
+  <aside class="sidebar" aria-label="خصائص العنصر">
+    <h3 style="margin:0 0 8px 0">خصائص العنصر</h3>
+    <div id="propsEmpty" class="small">اختر عنصراً في الصفحة لظهور الخصائص.</div>
+    <div id="props" style="display:none">
+      <div class="controls">
+        <label>المحتوى (انقر للتعديل)</label>
+        <div id="editContent" contenteditable="true" class="btn" style="min-height:40px"></div>
+
+        <label>العرض (px)</label>
+        <input id="propWidth" type="number" class="btn" value="100">
+
+        <label>الارتفاع (px)</label>
+        <input id="propHeight" type="number" class="btn" value="50">
+
+        <label>محاذاة النص</label>
+        <select id="textAlign" class="btn">
+          <option value="center">توسيط</option>
+          <option value="right">يمين</option>
+          <option value="left">يسار</option>
+        </select>
+
+        <div style="display:flex;gap:8px">
+          <button id="bringFront" class="btn">إلى الأمام</button>
+          <button id="sendBack" class="btn">إلى الخلف</button>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button id="lockBtn" class="btn">قفل/فتح الحركة</button>
+          <button id="exportBtn" class="btn">حفظ كصورة (PNG)</button>
+        </div>
+
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+/*
+  محرر بسيط:
+  - إضافة نصوص وصور
+  - سحب لتحريك
+  - مقابض لتغيير الحجم
+  - تحرير النص مباشرة (contentEditable)
+  - لوحة خصائص جانبية لعرض/تعديل العرض/الارتفاع واللون والمحاذاة
+  - حفظ كصورة باستخدام html2canvas-like approach (لن نستخدم مكتبة خارجية هنا،
+    لكن يمكن اقتراح إضافتها لاحقاً لمخرجات أفضل). سأقدّم طريقة بسيطة لتنزيل
+    محتوى paper كصورة باستخدام SVG foreignObject (يعمل بشكل جيد للصيغ البسيطة).
+*/
+
+const paper = document.getElementById('paper');
+let selected = null;
+let zIndexCounter = 1;
+
+// Utility to create a new node element
+function createNode({type='text', text='نص قابل للتحرير', imgSrc=null, x=50,y=50,w=200,h=80} = {}) {
+  const node = document.createElement('div');
+  node.className = 'node';
+  node.style.left = x + 'px';
+  node.style.top = y + 'px';
+  node.style.width = w + 'px';
+  node.style.height = h + 'px';
+  node.style.zIndex = ++zIndexCounter;
+
+  const content = document.createElement(type === 'image' ? 'div' : 'div');
+  content.className = 'content';
+  // نص
+  if (type === 'image') {
+    const img = document.createElement('img');
+    img.src = imgSrc;
+    img.alt = 'صورة';
+    content.appendChild(img);
+    node.dataset.type = 'image';
+  } else {
+    content.contentEditable = true;
+    content.innerText = text;
+    content.style.textAlign = 'center';
+    node.dataset.type = 'text';
+  }
+
+  node.appendChild(content);
+
+  // resizer
+  const resizer = document.createElement('div');
+  resizer.className = 'resizer br';
+  node.appendChild(resizer);
+
+  // attach behaviors
+  makeDraggable(node);
+  makeResizable(node, resizer);
+  node.addEventListener('click', (e) => {
+    e.stopPropagation();
+    selectNode(node);
+  });
+
+  // when text content changes, update sidebar if selected
+  content.addEventListener('input', () => {
+    if (selected === node) updateSidebar();
+  });
+
+  paper.appendChild(node);
+  selectNode(node);
+  return node;
+}
+
+document.getElementById('addTextBtn').addEventListener('click', () => {
+  createNode({type:'text', text:'اكتب هنا', x:60, y:60, w:300, h:100});
+});
+
+const imgInput = document.getElementById('imgInput');
+imgInput.addEventListener('change', (ev) => {
+  const f = ev.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    createNode({type:'image', imgSrc:e.target.result, x:80, y:120, w:300, h:200});
+    imgInput.value = '';
+  };
+  reader.readAsDataURL(f);
+});
+
+document.getElementById('deleteBtn').addEventListener('click', () => {
+  if (!selected) return alert('اختر عنصراً للحذف');
+  selected.remove();
+  selected = null;
+  updateSidebar();
+});
+
+paper.addEventListener('click', () => {
+  selectNode(null);
+});
+
+/* تحديد عنصر */
+function selectNode(node){
+  if (selected) selected.classList.remove('selected');
+  selected = node;
+  if (selected) {
+    selected.classList.add('selected');
+  }
+  updateSidebar();
+}
+
+/* سحب العنصر */
+function makeDraggable(el){
+  let isDown=false, startX=0, startY=0, origX=0, origY=0;
+  el.addEventListener('pointerdown', (e) => {
+    // ignore if clicked on resizer
+    if (e.target.classList.contains('resizer')) return;
+    isDown = true;
+    el.style.cursor = 'grabbing';
+    startX = e.clientX; startY = e.clientY;
+    origX = parseFloat(el.style.left || 0);
+    origY = parseFloat(el.style.top || 0);
+    el.setPointerCapture(e.pointerId);
+    selectNode(el);
+  });
+  document.addEventListener('pointermove', (e) => {
+    if (!isDown) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    el.style.left = (origX + dx) + 'px';
+    el.style.top  = (origY + dy) + 'px';
+    if (selected === el) updateSidebar();
+  });
+  document.addEventListener('pointerup', (e) => {
+    if (!isDown) return;
+    isDown=false; el.style.cursor='grab';
+  });
+}
+
+/* تغيير الحجم باستخدام المقبض */
+function makeResizable(el, handle){
+  let isResizing=false, startX=0, startY=0, startW=0, startH=0;
+  handle.addEventListener('pointerdown', (e) => {
+    e.stopPropagation();
+    isResizing = true;
+    startX = e.clientX; startY = e.clientY;
+    startW = el.offsetWidth; startH = el.offsetHeight;
+    handle.setPointerCapture(e.pointerId);
+    selectNode(el);
+  });
+  document.addEventListener('pointermove', (e) => {
+    if (!isResizing) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const newW = Math.max(30, startW + dx);
+    const newH = Math.max(20, startH + dy);
+    el.style.width = newW + 'px';
+    el.style.height = newH + 'px';
+    if (selected === el) updateSidebar();
+  });
+  document.addEventListener('pointerup', (e) => {
+    if (!isResizing) return;
+    isResizing = false;
+  });
+}
+
+/* الشريط الجانبي: عرض خصائص العنصر المحدد */
+const props = document.getElementById('props');
+const propsEmpty = document.getElementById('propsEmpty');
+
+const editContent = document.getElementById('editContent');
+const propWidth = document.getElementById('propWidth');
+const propHeight = document.getElementById('propHeight');
+const textAlign = document.getElementById('textAlign');
+const fontSize = document.getElementById('fontSize');
+const fontColor = document.getElementById('fontColor');
+const bgColor = document.getElementById('bgColor');
+const bringFront = document.getElementById('bringFront');
+const sendBack = document.getElementById('sendBack');
+const lockBtn = document.getElementById('lockBtn');
+const exportBtn = document.getElementById('exportBtn');
+
+function updateSidebar(){
+  if (!selected){
+    props.style.display = 'none';
+    propsEmpty.style.display = 'block';
+    return;
+  }
+  props.style.display = 'block';
+  propsEmpty.style.display = 'none';
+
+  const content = selected.querySelector('.content');
+  if (selected.dataset.type === 'text') {
+    editContent.innerText = content.innerText;
+    editContent.contentEditable = true;
+  } else {
+    editContent.innerText = '(صورة)'; editContent.contentEditable = false;
+  }
+  propWidth.value = Math.round(selected.offsetWidth);
+  propHeight.value = Math.round(selected.offsetHeight);
+  textAlign.value = getComputedStyle(content).textAlign || 'center';
+  fontSize.value = getComputedStyle(content).fontSize || '18px';
+  fontColor.value = rgbToHex(getComputedStyle(content).color || '#080808ff');
+  bgColor.value = rgbToHex(getComputedStyle(selected).backgroundColor || '#ffffff');
+}
+
+editContent.addEventListener('input', () => {
+  if (!selected) return;
+  const content = selected.querySelector('.content');
+  if (selected.dataset.type === 'text') {
+    content.innerText = editContent.innerText;
+  }
+});
+
+propWidth.addEventListener('change', () => {
+  if (!selected) return;
+  selected.style.width = propWidth.value + 'px';
+});
+propHeight.addEventListener('change', () => {
+  if (!selected) return;
+  selected.style.height = propHeight.value + 'px';
+});
+textAlign.addEventListener('change', () => {
+  if (!selected) return;
+  const content = selected.querySelector('.content');
+  content.style.textAlign = textAlign.value;
+});
+fontSize.addEventListener('change', () => {
+  if (!selected) return;
+  const content = selected.querySelector('.content');
+  content.style.fontSize = fontSize.value;
+});
+fontColor.addEventListener('change', () => {
+  if (!selected) return;
+  const content = selected.querySelector('.content');
+  content.style.color = fontColor.value;
+});
+bgColor.addEventListener('change', () => {
+  if (!selected) return;
+  selected.style.backgroundColor = bgColor.value;
+});
+
+// z-index controls
+bringFront.addEventListener('click', () => {
+  if (!selected) return;
+  selected.style.zIndex = ++zIndexCounter;
+});
+sendBack.addEventListener('click', () => {
+  if (!selected) return;
+  selected.style.zIndex = 1; // بسيط
+});
+
+// lock movement
+let locked = false;
+lockBtn.addEventListener('click', () => {
+  if (!selected) return;
+  locked = !locked;
+  if (locked) {
+    selected.style.pointerEvents = 'none';
+    lockBtn.innerText = 'مقفل';
+    // allow selection via sidebar? keep selected state visible
+    selected.style.opacity = 0.8;
+  } else {
+    selected.style.pointerEvents = '';
+    lockBtn.innerText = 'قفل/فتح الحركة';
+    selected.style.opacity = 1;
+  }
+});
+
+// export: بسيط عبر SVG foreignObject (محدود لكن يعمل جيداً مع html بسيط)
+exportBtn.addEventListener('click', () => {
+  // clone the paper content into a standalone SVG
+  const width = paper.clientWidth;
+  const height = paper.clientHeight;
+  const cloned = paper.cloneNode(true);
+
+  // remove UI highlighting (selected borders)
+  cloned.querySelectorAll('.selected').forEach(n => n.classList.remove('selected'));
+  // inline styles are already used; ensure images have data URLs (they do if uploaded)
+
+  // create foreignObject
+  const xmlns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(xmlns, "svg");
+  svg.setAttribute("width", width);
+  svg.setAttribute("height", height);
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+  const fo = document.createElementNS(xmlns, "foreignObject");
+  fo.setAttribute("width", "100%");
+  fo.setAttribute("height", "100%");
+
+  // wrap cloned into a container with computed styles
+  const wrapper = document.createElement('div');
+  wrapper.setAttribute('xmlns','http://www.w3.org/1999/xhtml');
+  wrapper.style.width = width + 'px';
+  wrapper.style.height = height + 'px';
+  wrapper.style.background = getComputedStyle(paper).backgroundColor;
+  wrapper.style.boxSizing = 'border-box';
+  wrapper.appendChild(cloned);
+
+  fo.appendChild(wrapper);
+  svg.appendChild(fo);
+
+  const serializer = new XMLSerializer();
+  const svgStr = serializer.serializeToString(svg);
+  const blob = new Blob([svgStr], {type: 'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'design.svg';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+});
+
+// helpful small utils
+function rgbToHex(rgb){
+  if (!rgb) return '#030303ff';
+  const m = rgb.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+  if (!m) return '#000000';
+  return '#' + [1,2,3].map(i => (+m[i]).toString(16).padStart(2,'0')).join('');
+}
+
+/* تفعيل التحرير أيضاً عند النقر على الجزئية داخل اللوحة الجانبية */
+editContent.addEventListener('focus', (e) => {
+  // when user types in sidebar, mirror to selected content
+});
+/* بعض إعدادات افتراضية */
+createNode({type:'text', text:'مرحباً! اضغط "إضافة نص" أو "إضافة صورة" لبدء التصميم.', x:80,y:40,w:360,h:120});
+createNode({type:'text', text:'يمكنك سحب العناصر وتغيير حجمها.', x:480,y:120,w:300,h:80});
+</script>
+</body>
+</html>

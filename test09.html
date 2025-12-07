@@ -1,0 +1,385 @@
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>نموذج بيانات بطاقة الدفع</title>
+  <style>
+    :root{
+      --bg:#f3f6fb;
+      --card:#1e293b;
+      --accent:#0ea5a4;
+      --muted:#6b7280;
+      --white:#ffffff;
+      --danger:#ef4444;
+      --radius:12px;
+    }
+    *{box-sizing:border-box;font-family: "Segoe UI", Tahoma, Arial, sans-serif;}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:linear-gradient(180deg,#eef2ff 0%,var(--bg) 100%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+    }
+    .wrapper{
+      width:100%;
+      max-width:980px;
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      gap:20px;
+      align-items:start;
+    }
+
+    /* form */
+    .panel{
+      background:var(--white);
+      border-radius:var(--radius);
+      box-shadow:0 6px 20px rgba(16,24,40,0.08);
+      padding:22px;
+    }
+    h2{margin:0 0 12px 0;font-size:20px;color:#0f172a}
+    label{display:block;font-size:13px;color:var(--muted);margin:10px 0 6px;}
+    .row{display:flex;gap:10px;}
+    .col{flex:1;}
+    input[type="text"], input[type="tel"], input[type="month"], input[type="password"]{
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid #e6e9ef;
+      font-size:15px;
+      outline:none;
+      background:#fff;
+    }
+    input:focus{box-shadow:0 0 0 4px rgba(14,165,164,0.06);border-color:var(--accent);}
+    .small{font-size:12px;color:var(--muted);margin-top:6px}
+    .inline-hint{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px;color:var(--muted);}
+
+    .btn{
+      display:inline-block;
+      padding:12px 16px;
+      border-radius:10px;
+      background:linear-gradient(90deg,var(--accent),#06b6d4);
+      color:var(--white);
+      border:none;
+      font-weight:600;
+      cursor:pointer;
+      margin-top:14px;
+    }
+    .btn:active{transform:translateY(1px);}
+
+    .error{color:var(--danger);font-size:13px;margin-top:8px}
+    .success{color:green;font-size:14px;margin-top:8px}
+
+    /* card preview */
+    .card-preview{
+      background:linear-gradient(135deg,#0f172a 0%, #0b1220 100%);
+      color:var(--white);
+      border-radius:14px;
+      padding:18px;
+      height:220px;
+      position:relative;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+    .chip{
+      width:46px;height:34px;border-radius:6px;background:linear-gradient(180deg,#d1d5db,#9ca3af);box-shadow:inset 0 -4px 6px rgba(0,0,0,0.25);
+    }
+    .brand{font-weight:700;}
+    .card-number{
+      font-size:20px;letter-spacing:2px;margin-top:8px;
+    }
+    .card-row{display:flex;justify-content:space-between;align-items:center}
+    .card-name{font-size:14px;text-transform:uppercase}
+    .card-exp{font-size:13px;color:rgba(255,255,255,0.9)}
+    .muted-small{font-size:12px;color:rgba(255,255,255,0.6)}
+
+    /* responsive */
+    @media (max-width:880px){
+      .wrapper{grid-template-columns:1fr; max-width:680px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="panel" style="min-height:260px;">
+      <h2>ادخال بيانات البطاقة</h2>
+      <p class="small">املأ بيانات بطاقتك لإكمال الشراء (واجهة عرض تجريبية).</p>
+
+      <form id="cardForm" autocomplete="on" novalidate>
+        <label for="cardNumber">رقم البطاقة</label>
+        <input id="cardNumber" name="cardNumber" type="tel" inputmode="numeric" placeholder="1234 5678 9012 3456" maxlength="23" autocomplete="cc-number" />
+        <div id="cardNumberError" class="error" aria-live="polite" style="display:none"></div>
+
+        <label for="holderName">اسم حامل البطاقة</label>
+        <input id="holderName" name="holderName" type="text" placeholder="اسم كامل كما على البطاقة" autocomplete="cc-name" />
+        <div id="nameError" class="error" style="display:none"></div>
+
+        <div class="row" style="margin-top:6px;">
+          <div class="col">
+            <label for="expiry">تاريخ الانتهاء</label>
+
+
+<!-- using text to support MM/YY formatting; we will validate -->
+            <input id="expiry" name="expiry" type="text" placeholder="MM / YY" maxlength="7" autocomplete="cc-exp" />
+            <div id="expiryError" class="error" style="display:none"></div>
+          </div>
+          <div style="width:140px;">
+            <label for="cvc">CVC / رمز التحقق</label>
+            <input id="cvc" name="cvc" type="password" inputmode="numeric" placeholder="123" maxlength="4" autocomplete="cc-csc" />
+            <div id="cvcError" class="error" style="display:none"></div>
+          </div>
+        </div>
+
+        <div class="inline-hint">
+          <div class="muted-small">ستبقى البيانات على جهازك فقط — هذا نموذج عرض فقط.</div>
+        </div>
+
+        <button id="submitBtn" class="btn" type="submit">تأكيد</button>
+        <div id="formMessage" aria-live="polite"></div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2>معاينة البطاقة</h2>
+      <div class="card-preview" id="preview">
+        <div class="card-row">
+          <div class="chip" aria-hidden="true"></div>
+          <div class="brand" id="cardBrand">نوع البطاقة</div>
+        </div>
+
+        <div>
+          <div class="card-number" id="previewNumber">•••• •••• •••• ••••</div>
+        </div>
+
+        <div class="card-row">
+          <div>
+            <div class="card-name" id="previewName">الاسم الكامل</div>
+            <div class="muted-small">Card holder</div>
+          </div>
+          <div>
+            <div class="card-exp" id="previewExp">MM/YY</div>
+            <div class="muted-small">Expiry</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="small" style="margin-top:12px;">يتم التحقق محليًا من الشكل العام ورقم Luhn، وبتنسيق تلقائي لمدخل رقم البطاقة.</p>
+    </div>
+  </div>
+
+  <script>
+    // --- عناصر
+    const cardNumberInput = document.getElementById('cardNumber');
+    const holderNameInput = document.getElementById('holderName');
+    const expiryInput = document.getElementById('expiry');
+    const cvcInput = document.getElementById('cvc');
+    const form = document.getElementById('cardForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    const previewNumber = document.getElementById('previewNumber');
+    const previewName = document.getElementById('previewName');
+    const previewExp = document.getElementById('previewExp');
+    const cardBrand = document.getElementById('cardBrand');
+
+    const cardNumberError = document.getElementById('cardNumberError');
+    const nameError = document.getElementById('nameError');
+    const expiryError = document.getElementById('expiryError');
+    const cvcError = document.getElementById('cvcError');
+    const formMessage = document.getElementById('formMessage');
+
+    // --- مساعدة: كشف نوع البطاقة من البادئة
+    function detectBrand(digits){
+      if(/^4/.test(digits)) return 'VISA';
+      if(/^(5[1-5]|2(2[2-9]|[3-6]\d|7[01]|720))/.test(digits)) return 'MASTERCARD';
+      if(/^3[47]/.test(digits)) return 'AMEX';
+      if(/^(6(011|5|4[4-9]))/.test(digits)) return 'DISCOVER';
+      return 'غير معروف';
+    }
+
+    // --- مساعدة: إزالة الفراغات
+    function onlyDigits(str){ return (str||'').replace(/\D/g,''); }
+
+    // --- تنسيق رقم البطاقة: إضافة فراغ بعد كل 4 أرقام (مع مراعاة AMEX 4-6-5 إن أردت لاحقاً)
+    function formatCardNumber(value){
+      const d = onlyDigits(value);
+      // بسيط: كل 4
+      return d.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+    }
+
+    // --- تحقق Luhn
+    function luhnCheck(cardNumber){
+      const digits = onlyDigits(cardNumber);
+      let sum = 0, shouldDouble = false;
+      for(let i = digits.length - 1; i >= 0; i--){
+        let d = parseInt(digits.charAt(i), 10);
+        if(shouldDouble){
+          d = d * 2;
+          if(d > 9) d -= 9;
+        }
+        sum += d;
+        shouldDouble = !shouldDouble;
+      }
+      return (sum % 10) === 0 && digits.length >= 12; // طول معقول
+    }
+
+    // --- تنسيق تاريخ الانتهاء: يتوقع MM / YY
+    expiryInput.addEventListener('input', (e) => {
+      let v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/g,'');
+if(v.length >= 3){
+        v = v.slice(0,2) + ' / ' + v.slice(2,4);
+      }
+      e.target.value = v;
+      // معاينة
+      previewExp.textContent = v || 'MM/YY';
+    });
+
+    // --- تنسيق رقم البطاقة أثناء الكتابة
+    cardNumberInput.addEventListener('input', (e) => {
+      const formatted = formatCardNumber(e.target.value);
+      e.target.value = formatted;
+      previewNumber.textContent = formatted || '•••• •••• •••• ••••';
+      const digits = onlyDigits(formatted);
+      cardBrand.textContent = detectBrand(digits);
+      // ضبط طول cvc لما يكون Amex (4) أو غيره (3)
+      const brand = detectBrand(digits);
+      if(brand === 'AMEX') cvcInput.maxLength = 4; else cvcInput.maxLength = 3;
+      // اخفاء الاخطاء اثناء الكتابة
+      cardNumberError.style.display = 'none';
+      formMessage.textContent = '';
+    });
+
+    holderNameInput.addEventListener('input', (e) => {
+      previewName.textContent = e.target.value || 'الاسم الكامل';
+      nameError.style.display = 'none';
+    });
+
+    cvcInput.addEventListener('input', () => {
+      cvcError.style.display = 'none';
+    });
+
+    // --- دوال تحقق عند الإرسال
+    function validateForm(){
+      let ok = true;
+      // رقم البطاقة
+      const num = cardNumberInput.value;
+      const digits = onlyDigits(num);
+      if(digits.length < 12){
+        cardNumberError.textContent = 'الرجاء إدخال رقم بطاقة صالح (طول غير كاف).';
+        cardNumberError.style.display = 'block';
+        ok = false;
+      } else if(!luhnCheck(num)){
+        cardNumberError.textContent = 'رقم البطاقة لا يمر بفحص Luhn — قد يكون غير صحيح.';
+        cardNumberError.style.display = 'block';
+        ok = false;
+      } else {
+        cardNumberError.style.display = 'none';
+      }
+
+      // الاسم
+      const name = holderNameInput.value.trim();
+      if(name.length < 2){
+        nameError.textContent = 'الرجاء إدخال اسم حامل البطاقة.';
+        nameError.style.display = 'block';
+        ok = false;
+      } else { nameError.style.display = 'none' }
+
+      // تاريخ الانتهاء MM / YY
+      const exp = expiryInput.value.replace(/\s/g,'');
+      const m = exp.match(/^(\d{2})\/?(\d{2})$/) || exp.match(/^(\d{2})\/?(\d{2})$/);
+      if(!m){
+        expiryError.textContent = 'استخدم الصيغة MM / YY.';
+        expiryError.style.display = 'block';
+        ok = false;
+      } else {
+        let mm = parseInt(expiryInput.value.slice(0,2),10);
+        let yy = parseInt(expiryInput.value.slice(-2),10);
+        if(mm < 1 || mm > 12){
+          expiryError.textContent = 'شهر غير صحيح.';
+          expiryError.style.display = 'block';
+          ok = false;
+        } else {
+          // تحقق من كونها ليست منتهية الصلاحية (مقارنة بالشهر الحالي)
+          const now = new Date();
+          const fullYear = 2000 + yy;
+          const expDate = new Date(fullYear, mm - 1 + 1, 1); // أول يوم بعد شهر الانتهاء
+          if(expDate <= now){
+            expiryError.textContent = 'البطاقة منتهية الصلاحية.';
+            expiryError.style.display = 'block';
+            ok = false;
+          } else {
+            expiryError.style.display = 'none';
+          }
+        }
+      }
+
+      // CVC
+      const cvc = cvcInput.value.trim();
+      const brand = detectBrand(digits);
+      const neededLen = (brand === 'AMEX') ? 4 : 3;
+      if(!/^\d+$/.test(cvc) || cvc.length !== neededLen){
+        cvcError.textContent = `رمز التحقق يجب أن يكون ${neededLen} أرقام.`;
+        cvcError.style.display = 'block';
+        ok = false;
+      } else {
+        cvcError.style.display = 'none';
+      }
+
+      return ok;
+    }
+
+    // --- عند إرسال النموذج
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      formMessage.textContent = '';
+      formMessage.className = '';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'جارٍ التحقق...';
+
+      // محاولة تحقق محلي سريع
+      setTimeout(() => {
+        const ok = validateForm();
+        if(!ok){
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'تأكيد';
+          formMessage.textContent = '';
+          return;
+        }
+
+        // محاكاة ارسال آمن (في الواقع
+
+
+
+        // **هام**: في تطبيق حقيقي، استعمل مزود دفع موثوق (Stripe/PayPal/... ) وارسال البيانات عبر خادم مؤمن.
+        formMessage.textContent = 'تم التحقق محليًا — جاهز للإرسال لمزود الدفع الآمن (محاكاة).';
+        formMessage.className = 'success';
+        submitBtn.textContent = 'تم';
+        // إظهار المعاينة النهائية
+        previewNumber.textContent = formatCardNumber(cardNumberInput.value);
+        // مسح الحقول الحساسة بعد العرض التجريبي
+        // (في تطبيق حقيقي قد تريد عدم الاحتفاظ بالحقل في الذاكرة)
+        // هنا لن نمسحها تلقائيًا لكي يرى المستخدم النتيجة.
+      }, 500);
+    });
+
+    // -- منع النسخ اللصق لصيغة غير رقمية في رقم البطاقة
+    cardNumberInput.addEventListener('paste', (e) => {
+      const txt = (e.clipboardData || window.clipboardData).getData('text');
+      if(!/[\d\s]+/.test(txt)){
+        e.preventDefault();
+      }
+    });
+
+    // --- عناصر افتراضية
+    previewNumber.textContent = '•••• •••• •••• ••••';
+    previewName.textContent = 'الاسم الكامل';
+    previewExp.textContent = 'MM/YY';
+    cardBrand.textContent = 'نوع البطاقة';
+  </script>
+</body>
+</html>
